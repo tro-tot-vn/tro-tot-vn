@@ -1,0 +1,40 @@
+volumes:
+  db-trototvn:
+
+services:
+  db-trototvn:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db-trototvn
+    hostname: db-trototvn
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${Sa_Password:-00hihiHIHI-}
+      - MSSQL_PID=Developer
+    ports:
+      - 1433:1433
+    volumes:
+      - db-trototvn:/var/opt/mssql
+    restart: always
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${Sa_Password:-00hihiHIHI-}" -Q "SELECT 1" -C -t 30 || exit 1
+      interval: 15s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  sqlserver.configurator:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: sqlserver.configurator
+    volumes:
+      - ./infras/db:/scripts
+    depends_on:
+      db-trototvn:
+        condition: service_healthy
+    entrypoint:  >
+      bash -c "
+      echo 'Waiting for SQL Server to be fully ready...';
+      sleep 15;
+      echo 'Running initialization scripts...';
+      chmod +x /scripts/run-scripts.sh;
+      /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\";
+      "
