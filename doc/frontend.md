@@ -15,10 +15,6 @@ description: Thông tin cơ bản
     │   ├── layouts
     │   ├── pages
     │   ├── providers
-    │   │   ├── app-provider
-    │   │   ├── auth-provider
-    │   │   ├── chat-provider
-    │   │   └── message-provider
     │   └── ui
     ├── config
     ├── hooks
@@ -31,22 +27,28 @@ description: Thông tin cơ bản
     └── utils
 </code></pre>
 
-<mark style="background-color:blue;">public</mark>: nơi chứa ảnh để xuất ra bên ngoài
+#### Thư mục chính
 
-<mark style="background-color:blue;">src/components</mark>: đây là nơi chứa các React Component, các code Component đặt ở đây.
+* **public**: Chứa các tệp tĩnh như hình ảnh, biểu tượng, và các tệp HTML.
+* **src**: Thư mục chính chứa mã nguồn của dự án.
 
-<mark style="background-color:blue;">src/config</mark>: chứa file config cho dự án
+#### Thư mục con trong [src](https://vscode-file/vscode-app/usr/share/code/resources/app/out/vs/code/electron-sandbox/workbench/workbench.html)
 
-<mark style="background-color:blue;">src/hooks</mark>: chứa các hàm wrapper của useContext
+* **assets**: Chứa các tài nguyên như hình ảnh, biểu tượng, và các tệp CSS.
+* **components**: Chứa các React Component được chia thành các thư mục con:
+  * **elements**: Các thành phần nhỏ và tái sử dụng.
+  * **layouts**: Các bố cục trang.
+  * **pages**: Các trang chính của ứng dụng.
+  * **providers**: Cung cấp ngữ cảnh (context providers) cho ứng dụng:
+  * **ui**: Các thành phần giao diện người dùng.
+* **config**: Chứa các tệp cấu hình của dự án.
+* **hooks**: Chứa các hook tùy chỉnh của React.
+* **lib**: Chứa các thư viện và mã dùng chung, bao gồm:
+  * **router**: Cấu hình và quản lý định tuyến.
+* **routes**: Chứa các định tuyến của ứng dụng.
+* **services**: Xử lí logic nghiệp vụ và API.
+* **socketio**: Chứa các cấu hình và quản lý Socket.IO.
+* **types**: Chứa các định nghĩa kiểu.
+* **utils**: Chứa các tiện ích và hàm hỗ trợ.
 
-<mark style="background-color:blue;">src/lib</mark>: chứa thư viện chung cho dự án.
-
-<mark style="background-color:blue;">src/routers</mark>: nơi định nghĩa các router cho các page.
-
-<mark style="background-color:blue;">src/services</mark>: nơi xử lí logic cho dự án, xử lí call api.
-
-<mark style="background-color:blue;">src/types</mark>: định nghĩa các type chung cho dự án
-
-<mark style="background-color:blue;">src/utils</mark>: nơi chứa các phụ trợ func.
-
-p/s: phần lớn code sẽ triển khai ở <mark style="background-color:blue;">src/components</mark>, <mark style="background-color:blue;">src/services</mark>, <mark style="background-color:blue;">src/components</mark>&#x20;
+Trong đây phần lớn sẽ viết code trên **src**/**components,** **src/routes, src/services**\
