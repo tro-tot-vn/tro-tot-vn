@@ -1,5 +1,5 @@
 ---
-description: Quy trình cơ bản
+description: Quy trình cơ bản khi phát triển 1 chức năng
 ---
 
 # Github
