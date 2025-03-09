@@ -6,3 +6,4 @@
   * [Github](tong-quan-du-an/github.md)
   * [Docker](tong-quan-du-an/docker.md)
   * [API Dog](tong-quan-du-an/api-dog.md)
+  * [Yêu cầu đối với từng phần](tong-quan-du-an/yeu-cau-doi-voi-tung-phan.md)

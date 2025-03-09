@@ -4,7 +4,15 @@ description: Quy trình cơ bản khi phát triển 1 chức năng
 
 # Github
 
-* Switch sang **dev** branch, và dùng `git pull` để kéo source mới nhất về.
+* _<mark style="color:red;">**Cấm code trên nhánh dev và main xong đẩy code.**</mark>_
+*   Lần đầu tiên kéo code về thì phải dùng câu lệnh này:&#x20;
+
+    ```
+    git clone -b dev <remote_repo>
+    ```
+
+    * Lí do: Câu lệnh này giúp bạn kéo code ở branch dev thay vì main.
+* Switch sang **dev** branch ( nếu đang ở branch khác) bằng cầu lệnh `git checkout dev` , và dùng `git pull` để kéo source mới nhất về.
 * Từ dev branch dùng lệnh `git checkout -b <tên branch mới> dev`&#x20;
 * `<tên branch mới>` phải theo format `feature/<tên chức năng>`
 * Phát triển chức chức năng trên branch mà bạn vừa tạo.
