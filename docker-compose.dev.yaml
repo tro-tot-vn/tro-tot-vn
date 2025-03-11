@@ -38,3 +38,11 @@ services:
       chmod +x /scripts/run-scripts.sh;
       /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\";
       "
+  
+  redis-trototvn:
+    image: redis:7.0-alpine
+    container_name: redis-trototvn
+    hostname: redis-trototvn
+    ports:
+      - 5555:6379
+    restart: always
