@@ -3,7 +3,9 @@ volumes:
 
 services:
   db-trototvn:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    build:
+      context: ./infras/docker/mssql
+    image: db-trototvn-fts:latest
     container_name: db-trototvn
     hostname: db-trototvn
     environment:
@@ -30,15 +32,9 @@ services:
     depends_on:
       db-trototvn:
         condition: service_healthy
-    entrypoint:  >
-      bash -c "
-      echo 'Waiting for SQL Server to be fully ready...';
-      sleep 15;
-      echo 'Running initialization scripts...';
-      chmod +x /scripts/run-scripts.sh;
-      /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\";
-      "
-  
+    entrypoint: >
+      bash -c " echo 'Waiting for SQL Server to be fully ready...'; sleep 15; echo 'Running initialization scripts...'; chmod +x /scripts/run-scripts.sh; /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; "
+
   redis-trototvn:
     image: redis:7.0-alpine
     container_name: redis-trototvn
@@ -46,3 +42,16 @@ services:
     ports:
       - 5555:6379
     restart: always
+
+  redis-insight-trototvn:
+    image: redis/redisinsight:2.68
+    container_name: redis-insight-trototvn
+    hostname: redis-insight-trototvn
+    ports:
+      - 5540:5540
+    restart: always
+    depends_on:
+      - redis-trototvn
+    environment:
+      - RI_REDIS_PORT=6379
+      - RI_REDIS_HOST=redis-trototvn
