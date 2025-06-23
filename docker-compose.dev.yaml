@@ -12,10 +12,15 @@ services:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=${Sa_Password:-00hihiHIHI-}
       - MSSQL_PID=Developer
+      - TZ=Asia/Ho_Chi_Minh
     ports:
       - 1433:1433
     volumes:
       - db-trototvn:/var/opt/mssql
+      - ./backup:/var/opt/mssql/backup
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+
     restart: always
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${Sa_Password:-00hihiHIHI-}" -Q "SELECT 1" -C -t 30 || exit 1
