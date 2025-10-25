@@ -2,3 +2,12 @@ tro-tot-vn.code-workspace
 .idea/
 .vscode/
 volumes/*
+logs/
+*.log
+infras/compose/.env
+backup/
+.env
+sync-service
+tro-tot-vn-fe
+tro-tot-vn-be
+

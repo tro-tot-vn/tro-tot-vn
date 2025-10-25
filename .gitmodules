@@ -1,6 +1,0 @@
-[submodule "tro-tot-vn-be"]
-	path = tro-tot-vn-be
-	url = https://github.com/lamdx4/tro-tot-vn-be
-[submodule "tro-tot-vn-fe"]
-	path = tro-tot-vn-fe
-	url = https://github.com/lamdx4/tro-tot-vn-fe
