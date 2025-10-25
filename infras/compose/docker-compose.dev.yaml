@@ -31,7 +31,7 @@ services:
     image: mcr.microsoft.com/mssql-tools
     container_name: sqlserver.configurator
     volumes:
-      - ./db:/scripts
+      - ../db:/scripts
     depends_on:
       db-trototvn:
         condition: service_healthy
@@ -118,27 +118,6 @@ services:
     depends_on:
       - "etcd"
       - "minio"
-
-  sync-service:
-    build:
-      context: ../../sync-service
-    container_name: sync-service
-    environment:
-      - REDIS_HOST=redis-trototvn
-      - REDIS_PORT=6379
-      - MILVUS_HOST=milvus-standalone
-      - MILVUS_PORT=19530
-      - EMBEDDING_MODEL=BAAI/bge-m3
-      - EMBEDDING_DIM=128
-      - DEVICE=cpu
-      - WORKER_CONCURRENCY=5
-    volumes:
-      - ../../sync-service:/app
-      - ~/.cache/huggingface:/root/.cache/huggingface
-    depends_on:
-      - redis-trototvn
-      - standalone
-    restart: always
 
 networks:
   default:

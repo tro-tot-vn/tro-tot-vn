@@ -10,4 +10,6 @@ backup/
 sync-service
 tro-tot-vn-fe
 tro-tot-vn-be
-
+search-service
+content-moderation-service
+recommend-service
