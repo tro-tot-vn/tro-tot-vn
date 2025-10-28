@@ -96,6 +96,7 @@ services:
 
   standalone:
     container_name: milvus-standalone
+    hostname: milvus-standalone
     image: milvusdb/milvus:v2.6.2
     command: ["milvus", "run", "standalone"]
     security_opt:
@@ -119,6 +120,15 @@ services:
       - "etcd"
       - "minio"
 
+  attu:
+      image: zilliz/attu:v2.6
+      container_name: attu
+      environment:
+        MILVUS_URL: milvus-standalone:19530
+      ports:
+        - "8000:3000"
+      depends_on:
+        - standalone
 networks:
   default:
     name: trototvn

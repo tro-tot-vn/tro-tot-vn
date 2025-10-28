@@ -1,0 +1,207 @@
+volumes:
+  db-trototvn:
+
+services:
+  db-trototvn:
+    build:
+      context: ./docker/mssql
+    image: db-trototvn-fts:latest
+    container_name: db-trototvn
+    hostname: db-trototvn
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${Sa_Password:-00hihiHIHI-}
+      - MSSQL_PID=Developer
+      - TZ=Asia/Ho_Chi_Minh
+    ports:
+      - 1433:1433
+    volumes:
+      - db-trototvn:/var/opt/mssql
+      - ./backup:/var/opt/mssql/backup
+    restart: always
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${Sa_Password:-00hihiHIHI-}" -Q "SELECT 1" -C -t 30 || exit 1
+      interval: 15s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  sqlserver.configurator:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: sqlserver.configurator
+    volumes:
+      - ../db:/scripts
+    depends_on:
+      db-trototvn:
+        condition: service_healthy
+    entrypoint: >
+      bash -c " echo 'Waiting for SQL Server to be fully ready...'; sleep 15; echo 'Running initialization scripts...'; chmod +x /scripts/run-scripts.sh; /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; "
+
+  redis-trototvn:
+    image: redis:7.0-alpine
+    container_name: redis-trototvn
+    hostname: redis-trototvn
+    ports:
+      - 5555:6379
+    restart: always
+
+  redis-insight-trototvn:
+    image: redis/redisinsight:2.68
+    container_name: redis-insight-trototvn
+    hostname: redis-insight-trototvn
+    ports:
+      - 5540:5540
+    restart: always
+    depends_on:
+      - redis-trototvn
+    environment:
+      - RI_REDIS_PORT=6379
+      - RI_REDIS_HOST=redis-trototvn
+
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.18
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: always
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: always
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.6.2
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+    - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MQ_TYPE: woodpecker
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - "etcd"
+      - "minio"
+    restart: always
+
+  sync-service:
+    build:
+      context: ../../sync-service
+      dockerfile: Dockerfile
+    container_name: sync-service
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-standalone
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=BAAI/bge-m3
+      - EMBEDDING_DIM=128
+      - DEVICE=${DEVICE:-cpu}
+      - WORKER_CONCURRENCY=5
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - standalone
+    restart: always
+
+  search-service:
+    build:
+      context: ../../search-service
+      dockerfile: Dockerfile
+    container_name: search-service
+    environment:
+      - MILVUS_HOST=milvus-standalone
+      - MILVUS_PORT=19530
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - EMBEDDING_MODEL=BAAI/bge-m3
+      - EMBEDDING_DIM=128
+      - DEVICE=${DEVICE:-cpu}
+      - DEFAULT_SEARCH_LIMIT=100
+      - MAX_SEARCH_LIMIT=500
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - standalone
+    restart: always
+
+  backend:
+    build:
+      context: ../../tro-tot-vn-be
+      dockerfile: Dockerfile
+    container_name: backend-trototvn
+    environment:
+      - NODE_ENV=production
+      - SEARCH_SERVICE_URL=http://search-service:8000
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - DB_HOST=db-trototvn
+      - DB_PORT=1433
+      - DB_USERNAME=sa
+      - DB_PASSWORD=${Sa_Password:-00hihiHIHI-}
+      - DB_DATABASE=TroTotVN
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db-trototvn
+      - redis-trototvn
+      - search-service
+    restart: always
+
+  frontend:
+    build:
+      context: ../../tro-tot-vn-fe
+      dockerfile: Dockerfile
+    container_name: frontend-trototvn
+    environment:
+      - VITE_API_URL=http://backend-trototvn:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: always
+
+networks:
+  default:
+    name: trototvn
+
