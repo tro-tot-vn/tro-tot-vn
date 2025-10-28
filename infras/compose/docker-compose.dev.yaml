@@ -39,7 +39,7 @@ services:
       bash -c " echo 'Waiting for SQL Server to be fully ready...'; sleep 15; echo 'Running initialization scripts...'; chmod +x /scripts/run-scripts.sh; /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; "
 
   debezium-server:
-    image: debezium/server:2.7
+    image: debezium/server:2.7.3.Final
     container_name: debezium-server
     hostname: debezium-server
     volumes:
