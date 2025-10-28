@@ -38,6 +38,22 @@ services:
     entrypoint: >
       bash -c " echo 'Waiting for SQL Server to be fully ready...'; sleep 15; echo 'Running initialization scripts...'; chmod +x /scripts/run-scripts.sh; /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; "
 
+  debezium-server:
+    image: debezium/server:2.7
+    container_name: debezium-server
+    hostname: debezium-server
+    volumes:
+      - ./debezium/application.properties:/debezium/conf/application.properties:ro
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/debezium:/debezium/data
+    environment:
+      - SA_PASSWORD=${Sa_Password:-00hihiHIHI-}
+    depends_on:
+      sqlserver.configurator:
+        condition: service_completed_successfully
+      redis-trototvn:
+        condition: service_started
+    restart: always
+
   redis-trototvn:
     image: redis:7.0-alpine
     container_name: redis-trototvn
@@ -129,6 +145,7 @@ services:
         - "8000:3000"
       depends_on:
         - standalone
+
 networks:
   default:
     name: trototvn
