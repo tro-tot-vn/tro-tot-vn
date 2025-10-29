@@ -38,10 +38,10 @@ services:
     entrypoint: >
       bash -c " echo 'Waiting for SQL Server to be fully ready...'; sleep 15; echo 'Running initialization scripts...'; chmod +x /scripts/run-scripts.sh; /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; "
 
-  debezium-server:
+  debezium-trototvn:
     image: debezium/server:2.7.3.Final
-    container_name: debezium-server
-    hostname: debezium-server
+    container_name: debezium-trototvn
+    hostname: debezium-trototvn
     volumes:
       - ./debezium/application.properties:/debezium/conf/application.properties:ro
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/debezium:/debezium/data
@@ -78,8 +78,9 @@ services:
       - RI_REDIS_PORT=6379
       - RI_REDIS_HOST=redis-trototvn
 
-  etcd:
-    container_name: milvus-etcd
+  etcd-trototvn:
+    container_name: etcd-trototvn
+    hostname: etcd-trototvn
     image: quay.io/coreos/etcd:v3.5.18
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
@@ -88,15 +89,17 @@ services:
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
-    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    command: etcd -advertise-client-urls=http://etcd-trototvn:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 30s
       timeout: 20s
       retries: 3
+    restart: always
 
-  minio:
-    container_name: milvus-minio
+  minio-trototvn:
+    container_name: minio-trototvn
+    hostname: minio-trototvn
     image: minio/minio:RELEASE.2024-12-18T13-15-44Z
     environment:
       MINIO_ACCESS_KEY: minioadmin
@@ -112,17 +115,18 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    restart: always
 
-  standalone:
-    container_name: milvus-standalone
-    hostname: milvus-standalone
+  milvus-trototvn:
+    container_name: milvus-trototvn
+    hostname: milvus-trototvn
     image: milvusdb/milvus:v2.6.2
     command: ["milvus", "run", "standalone"]
     security_opt:
     - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: etcd:2379
-      MINIO_ADDRESS: minio:9000
+      ETCD_ENDPOINTS: etcd-trototvn:2379
+      MINIO_ADDRESS: minio-trototvn:9000
       MQ_TYPE: woodpecker
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
@@ -136,19 +140,21 @@ services:
       - "19531:19530"
       - "9093:9091"
     depends_on:
-      - "etcd"
-      - "minio"
+      - etcd-trototvn
+      - minio-trototvn
     restart: always
 
-  attu:
+  attu-trototvn:
       image: zilliz/attu:v2.6
-      container_name: attu
+      container_name: attu-trototvn
+      hostname: attu-trototvn
       environment:
-        MILVUS_URL: milvus-standalone:19530
+        MILVUS_URL: milvus-trototvn:19530
       ports:
         - "8888:3000"
       depends_on:
-        - standalone
+        - milvus-trototvn
+      restart: always
 
 networks:
   default:
