@@ -31,7 +31,7 @@ services:
     image: mcr.microsoft.com/mssql-tools
     container_name: sqlserver.configurator
     volumes:
-      - ../db:/scripts
+      - ./db:/scripts
     depends_on:
       db-trototvn:
         condition: service_healthy
