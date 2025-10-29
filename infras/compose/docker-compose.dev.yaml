@@ -60,6 +60,9 @@ services:
     hostname: redis-trototvn
     ports:
       - 5555:6379
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/redis:/data
+    command: redis-server --appendonly yes --appendfsync everysec --save 60 1000
     restart: always
 
   redis-insight-trototvn:
