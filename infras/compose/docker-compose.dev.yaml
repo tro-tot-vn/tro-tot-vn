@@ -156,12 +156,20 @@ services:
         - milvus-trototvn
       restart: always
 
-
   sync-service-trototvn:
     build:
       context: ../../sync-service
       dockerfile: Dockerfile
     container_name: sync-service-trototvn
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - WORKER_CONCURRENCY=5
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
     depends_on:
