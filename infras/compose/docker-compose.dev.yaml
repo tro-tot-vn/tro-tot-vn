@@ -156,6 +156,19 @@ services:
         - milvus-trototvn
       restart: always
 
+
+  sync-service-trototvn:
+    build:
+      context: ../../sync-service
+      dockerfile: Dockerfile
+    container_name: sync-service-trototvn
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - milvus-trototvn
+    restart: always
+
 networks:
   default:
     name: trototvn
