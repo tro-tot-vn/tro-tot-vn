@@ -177,6 +177,17 @@ services:
       - milvus-trototvn
     restart: always
 
+  moderation-service-trototvn:
+    build:
+      context: ../../content-moderation-service
+      dockerfile: Dockerfile
+    container_name: moderation-service-trototvn
+    hostname: moderation-service-trototvn
+    ports:
+      - "8123:8123"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    restart: always
 networks:
   default:
     name: trototvn
