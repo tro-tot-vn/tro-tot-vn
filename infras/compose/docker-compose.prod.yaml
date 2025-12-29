@@ -3,9 +3,7 @@ volumes:
 
 services:
   db-trototvn:
-    build:
-      context: ./docker/mssql
-    image: db-trototvn-fts:latest
+    image:  mcr.microsoft.com/mssql/server:2022-latest
     container_name: db-trototvn
     hostname: db-trototvn
     environment:

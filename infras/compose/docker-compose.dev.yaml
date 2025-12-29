@@ -3,9 +3,7 @@ volumes:
 
 services:
   db-trototvn:
-    build:
-      context: ./docker/mssql
-    image: db-trototvn-fts:latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: db-trototvn
     hostname: db-trototvn
     environment:
@@ -16,8 +14,8 @@ services:
     ports:
       - 1433:1433
     volumes:
-      - db-trototvn:/var/opt/mssql
-      - ./backup:/var/opt/mssql/backup
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/mssql:/var/opt/mssql
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/backup:/var/opt/mssql/backup
 
     restart: always
     healthcheck:
@@ -177,6 +175,28 @@ services:
       - milvus-trototvn
     restart: always
 
+  recommend-service-trototvn:
+    build:
+      context: ../../recommend-service
+      dockerfile: Dockerfile
+    container_name: recommend-service-trototvn
+    hostname: recommend-service-trototvn
+    ports:
+      - "8001:8001"
+    environment:
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - TIME_DECAY_ENABLED=True
+      - TIME_DECAY_LAMBDA=0.05
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - milvus-trototvn
+    restart: always
+
   moderation-service-trototvn:
     build:
       context: ../../content-moderation-service
@@ -188,6 +208,7 @@ services:
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
     restart: always
+
 networks:
   default:
     name: trototvn
