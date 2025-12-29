@@ -4,6 +4,7 @@ volumes:
 services:
   db-trototvn:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
     container_name: db-trototvn
     hostname: db-trototvn
     environment:
@@ -121,7 +122,7 @@ services:
     image: milvusdb/milvus:v2.6.2
     command: ["milvus", "run", "standalone"]
     security_opt:
-    - seccomp:unconfined
+      - seccomp:unconfined
     environment:
       ETCD_ENDPOINTS: etcd-trototvn:2379
       MINIO_ADDRESS: minio-trototvn:9000
@@ -143,17 +144,37 @@ services:
     restart: always
 
   attu-trototvn:
-      image: zilliz/attu:v2.6
-      container_name: attu-trototvn
-      hostname: attu-trototvn
-      environment:
-        MILVUS_URL: milvus-trototvn:19530
-      ports:
-        - "8888:3000"
-      depends_on:
-        - milvus-trototvn
-      restart: always
+    image: zilliz/attu:v2.6
+    container_name: attu-trototvn
+    hostname: attu-trototvn
+    environment:
+      MILVUS_URL: milvus-trototvn:19530
+    ports:
+      - "8888:3000"
+    depends_on:
+      - milvus-trototvn
+    restart: always
 
+  sync-service-trototvn:
+    build:
+      context: ../../sync-service
+      dockerfile: Dockerfile
+    container_name: sync-service-trototvn
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - WORKER_CONCURRENCY=5
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - milvus-trototvn
+    restart: always
 networks:
   default:
     name: trototvn
