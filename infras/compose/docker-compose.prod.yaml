@@ -3,7 +3,7 @@ volumes:
 
 services:
   db-trototvn:
-    image:  mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: db-trototvn
     hostname: db-trototvn
     environment:
@@ -29,6 +29,7 @@ services:
     container_name: sqlserver.configurator
     volumes:
       - ../db:/scripts
+      - ./backup/TroTotVN_full.bak:/backup/TroTotVN_full.bak
     depends_on:
       db-trototvn:
         condition: service_healthy
@@ -98,7 +99,7 @@ services:
     image: milvusdb/milvus:v2.6.2
     command: ["milvus", "run", "standalone"]
     security_opt:
-    - seccomp:unconfined
+      - seccomp:unconfined
     environment:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
@@ -202,4 +203,3 @@ services:
 networks:
   default:
     name: trototvn
-
