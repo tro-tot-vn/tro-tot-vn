@@ -11,6 +11,7 @@ echo "Executing script 1: Create database"
 sleep 3
 
 # Restore from backup FIRST (before enabling CDC)
+# Check if backup exists in the mounted volume
 if [ -f "/backup/TroTotVN_full.bak" ]; then
     echo "Executing script 2: Restore from backup"
     /opt/mssql-tools/bin/sqlcmd -S db-trototvn -U sa -P "$1" -d master -i /scripts/03-restore-backup.sql -C

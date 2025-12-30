@@ -13,7 +13,7 @@ GO
 
 -- Restore database from backup
 RESTORE DATABASE TroTotVN
-FROM DISK = '/backup/TroTotVN_full.bak'
+FROM DISK = '/var/opt/mssql/backup/TroTotVN_full.bak'
 WITH 
     MOVE 'TroTotVN' TO '/var/opt/mssql/data/TroTotVN.mdf',
     MOVE 'TroTotVN_log' TO '/var/opt/mssql/data/TroTotVN_log.ldf',
