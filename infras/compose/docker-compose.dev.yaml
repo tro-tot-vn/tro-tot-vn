@@ -30,6 +30,7 @@ services:
     container_name: sqlserver.configurator
     volumes:
       - ./db:/scripts
+      - ./backup:/backup
     depends_on:
       db-trototvn:
         condition: service_healthy
