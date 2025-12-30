@@ -4,7 +4,6 @@ volumes:
 services:
   db-trototvn:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    user: root
     container_name: db-trototvn
     hostname: db-trototvn
     environment:
@@ -156,9 +155,7 @@ services:
     restart: always
 
   sync-service-trototvn:
-    build:
-      context: ../../sync-service
-      dockerfile: Dockerfile
+    image: lamdx4/sync-service-trototvn:1.0.0
     container_name: sync-service-trototvn
     environment:
       - REDIS_HOST=redis-trototvn

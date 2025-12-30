@@ -121,9 +121,7 @@ services:
     restart: always
 
   sync-service:
-    build:
-      context: ../../sync-service
-      dockerfile: Dockerfile
+    image: lamdx4/sync-service-trototvn:1.0.0
     container_name: sync-service
     environment:
       - REDIS_HOST=redis-trototvn

@@ -1,0 +1,33 @@
+  recommend-service-trototvn:
+    build:
+      context: ../../recommend-service
+      dockerfile: Dockerfile
+    container_name: recommend-service-trototvn
+    hostname: recommend-service-trototvn
+    ports:
+      - "8001:8001"
+    environment:
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - TIME_DECAY_ENABLED=True
+      - TIME_DECAY_LAMBDA=0.05
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - milvus-trototvn
+    restart: always
+
+  moderation-service-trototvn:
+    build:
+      context: ../../content-moderation-service
+      dockerfile: Dockerfile
+    container_name: moderation-service-trototvn
+    hostname: moderation-service-trototvn
+    ports:
+      - "8123:8123"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    restart: always
