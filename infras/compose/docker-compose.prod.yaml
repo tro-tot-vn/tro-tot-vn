@@ -185,19 +185,43 @@ services:
       - search-service
     restart: always
 
-  frontend:
-    build:
-      context: ../../tro-tot-vn-fe
-      dockerfile: Dockerfile
-    container_name: frontend-trototvn
-    environment:
-      - VITE_API_URL=http://backend-trototvn:3000
+  recommendation-service:
+    image: lamdx4/recommendation-service-trototvn:1.0.0
+    container_name: recommendation-service
     ports:
-      - "5173:5173"
+      - "8002:8002"
     depends_on:
-      - backend
+      - redis-trototvn
     restart: always
 
-networks:
-  default:
-    name: trototvn
+  coturn-trototvn:
+    image: coturn/coturn:4.8.0-alpine
+    container_name: coturn-trototvn
+    restart: unless-stopped
+    network_mode: "host"
+    
+    environment:
+      # Cấu hình TURN server (nếu không dùng config file)
+      - REALM=my-video-app.com
+      - TURN_USER=myuser
+      - TURN_PASSWORD=mypassword123
+      - LISTENING_PORT=3478
+      - MIN_PORT=49160
+      - MAX_PORT=49200
+      
+      # Cấu hình giám sát IP
+      - CHECK_INTERVAL=30000  # Kiểm tra mỗi 50 phút
+    
+    volumes:
+      # Mount script và config
+      - ./coturn/entrypoint.sh:/entrypoint.sh:ro
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[t]urnserver' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
