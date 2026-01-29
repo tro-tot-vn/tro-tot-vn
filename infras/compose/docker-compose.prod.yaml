@@ -199,7 +199,7 @@ services:
     container_name: coturn-trototvn
     restart: unless-stopped
     network_mode: "host"
-    
+
     environment:
       # Cấu hình TURN server (nếu không dùng config file)
       - REALM=my-video-app.com
@@ -208,17 +208,17 @@ services:
       - LISTENING_PORT=3478
       - MIN_PORT=49160
       - MAX_PORT=49200
-      
+
       # Cấu hình giám sát IP
-      - CHECK_INTERVAL=30000  # Kiểm tra mỗi 50 phút
-    
+      - CHECK_INTERVAL=30000 # Kiểm tra mỗi 50 phút
+
     volumes:
       # Mount script và config
       - ./coturn/entrypoint.sh:/entrypoint.sh:ro
       - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
-    
+
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
-    
+
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[t]urnserver' || exit 1"]
       interval: 30s
