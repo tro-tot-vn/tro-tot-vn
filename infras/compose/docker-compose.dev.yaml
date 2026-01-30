@@ -158,6 +158,77 @@ services:
       - redis-trototvn
       - milvus-trototvn
     restart: always
+
+  auth-service:
+    build:
+      context: ../../auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      - DB_URL=postgres://postgres:Password123@db-trototvn:5432/trotot_db?sslmode=disable
+      - REDIS_URL=redis://redis-trototvn:6379
+      - JWT_PRIVATE_KEY_PATH=certs/private_key.pem
+      - JWT_PUBLIC_KEY_PATH=certs/public_key.pem
+      - PORT=8080
+    depends_on:
+      db-trototvn:
+        condition: service_healthy
+      redis-trototvn:
+        condition: service_started
+    restart: always
+
+  profile-service:
+    build:
+      context: ../../profile-service
+      dockerfile: Dockerfile
+    container_name: profile-service
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=Password123
+      - DB_HOST=db-trototvn
+      - DB_PORT=5432
+      - DB_NAME=trotot_db
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - LISTING_SERVICE_URL=http://listing-service:8082
+      - PORT=8081
+    depends_on:
+      db-trototvn:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    restart: always
+
+  listing-service:
+    build:
+      context: ../../listing-service
+      dockerfile: Dockerfile
+    container_name: listing-service
+    environment:
+      - DB_URL=postgres://postgres:Password123@db-trototvn:5432/trotot_db?sslmode=disable
+      - PYTHON_SEARCH_URL=http://search-service:5000
+      - MODERATION_SERVICE_URL=http://content-moderation-service:5001
+      - PORT=8082
+    depends_on:
+      db-trototvn:
+        condition: service_healthy
+    restart: always
+
+  krakend-gateway:
+    image: devopsfaith/krakend:latest
+    container_name: krakend-gateway
+    volumes:
+      - ../../gateway:/etc/krakend
+    ports:
+      - "8000:8000"
+    command: ["run", "-d", "-c", "/etc/krakend/krakend.json"]
+    depends_on:
+      - auth-service
+      - profile-service
+      - listing-service
+    restart: always
+
 networks:
   default:
     name: trototvn
