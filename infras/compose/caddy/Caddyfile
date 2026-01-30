@@ -1,0 +1,12 @@
+{
+    email djiahak@gmail.com
+}
+
+# Thay thế bằng domain thực tế của bạn
+:80, :443 {
+    reverse_proxy krakend-gateway:8000
+    
+    log {
+        output file /var/log/caddy/access.log
+    }
+}

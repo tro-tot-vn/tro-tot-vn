@@ -1,0 +1,103 @@
+volumes:
+  db-trototvn:
+  caddy_data:
+  caddy_config:
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - krakend-gateway
+    restart: always
+
+  db-trototvn:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db-trototvn
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${Sa_Password}
+    volumes:
+      - db-trototvn:/var/opt/mssql
+    restart: always
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${Sa_Password}" -Q "SELECT 1" -C -t 30 || exit 1
+      interval: 15s
+      retries: 5
+
+  redis-trototvn:
+    image: redis:7.0-alpine
+    container_name: redis-trototvn
+    restart: always
+
+  monolith:
+    build:
+      context: ../../tro-tot-vn-be
+      dockerfile: Dockerfile
+    container_name: monolith
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db-trototvn
+      - DB_PASSWORD=${Sa_Password}
+      - JWT_ACCESS_TOKEN_SECRET=${JWT_SECRET}
+    restart: always
+
+  chat-service:
+    build:
+      context: ../../chat-service
+      dockerfile: Dockerfile
+    container_name: chat-service
+    environment:
+      - PORT=8083
+      - REDIS_HOST=redis-trototvn
+    restart: always
+
+  krakend-gateway:
+    image: devopsfaith/krakend:latest
+    container_name: krakend-gateway
+    volumes:
+      - ../../gateway:/etc/krakend
+    command: ["run", "-d", "-c", "/etc/krakend/krakend-legacy.json"]
+    depends_on:
+      - monolith
+      - chat-service
+    restart: always
+
+  # Shared AI Infra (Minimal Production)
+  minio-trototvn:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    container_name: minio-trototvn
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+    command: minio server /data
+    restart: always
+
+  milvus-trototvn:
+    image: milvusdb/milvus:v2.6.2
+    container_name: milvus-trototvn
+    command: ["milvus", "run", "standalone"]
+    depends_on:
+      - etcd-trototvn
+      - minio-trototvn
+    environment:
+      ETCD_ENDPOINTS: etcd-trototvn:2379
+      MINIO_ADDRESS: minio-trototvn:9000
+    restart: always
+
+  etcd-trototvn:
+    image: quay.io/coreos/etcd:v3.5.18
+    container_name: etcd-trototvn
+    command: etcd -advertise-client-urls=http://etcd-trototvn:2379 -listen-client-urls http://0.0.0.0:2379
+    restart: always
+
+networks:
+  default:
+    name: trototvn

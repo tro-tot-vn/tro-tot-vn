@@ -1,0 +1,355 @@
+{
+    "version": 3,
+    "name": "TroTotVN API Gateway",
+    "port": 8000,
+    "cache_ttl": "300s",
+    "timeout": "3s",
+    "read_timeout": "10s",
+    "write_timeout": "10s",
+    "idle_timeout": "20s",
+    "read_header_timeout": "1s",
+    "extra_config": {
+        "telemetry/logging": {
+            "level": "INFO",
+            "prefix": "[KRAKEND]",
+            "syslog": false,
+            "stdout": true
+        },
+        "security/cors": {
+            "allow_origins": [
+                "*"
+            ],
+            "allow_methods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "OPTIONS"
+            ],
+            "allow_headers": [
+                "Origin",
+                "Authorization",
+                "Content-Type",
+                "X-App-Version"
+            ],
+            "expose_headers": [
+                "Content-Length",
+                "X-Krakend-Completed"
+            ],
+            "max_age": "12h"
+        },
+        "qos/ratelimit/service": {
+            "max_rate": 1000,
+            "client_capacity": 100,
+            "every": "1s"
+        }
+    },
+    "endpoints": [
+        {
+            "endpoint": "/health",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/health",
+                    "host": [
+                        "http://auth-service:8080"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/login",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/auth/login",
+                    "host": [
+                        "http://auth-service:8080"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/register",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/auth/register",
+                    "host": [
+                        "http://auth-service:8080"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/send-otp-register",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/auth/send-otp-register",
+                    "host": [
+                        "http://auth-service:8080"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/verify-otp-register",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/auth/verify-otp-register",
+                    "host": [
+                        "http://auth-service:8080"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/change-password",
+            "method": "POST",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "jwk_url": "http://auth-service:8080/auth/.well-known/jwks.json",
+                    "disable_jwk_security": true,
+                    "propagate_claims": [
+                        [
+                            "accountId",
+                            "X-User-Id"
+                        ],
+                        [
+                            "role",
+                            "X-User-Role"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/auth/change-password",
+                    "host": [
+                        "http://auth-service:8080"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/v1/auth/logout",
+            "method": "POST",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "HS256",
+                    "key": "6cf9d57d-7d6c-4ab5-8419-115ec872aabf",
+                    "propagate_claims": [
+                        [
+                            "id",
+                            "X-User-Id"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/v1/auth/logout",
+                    "host": [
+                        "http://monolith:3333"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/v1/post/my",
+            "method": "GET",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "HS256",
+                    "key": "6cf9d57d-7d6c-4ab5-8419-115ec872aabf",
+                    "propagate_claims": [
+                        [
+                            "id",
+                            "X-User-Id"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/v1/post/my",
+                    "host": [
+                        "http://monolith:3333"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/customer/my-profile",
+            "method": "GET",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "jwk_url": "http://auth-service:8080/auth/.well-known/jwks.json",
+                    "disable_jwk_security": true,
+                    "propagate_claims": [
+                        [
+                            "accountId",
+                            "X-User-Id"
+                        ],
+                        [
+                            "role",
+                            "X-User-Role"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/customer/my-profile",
+                    "host": [
+                        "http://profile-service:8081"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/customer/{id}/profile",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/customer/{id}/profile",
+                    "host": [
+                        "http://profile-service:8081"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/post/search",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/post/search",
+                    "host": [
+                        "http://listing-service:8082"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/post/latest",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/post/latest",
+                    "host": [
+                        "http://listing-service:8082"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/post/{id}/detail",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/post/{id}/detail",
+                    "host": [
+                        "http://listing-service:8082"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/post/create",
+            "method": "POST",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "jwk_url": "http://auth-service:8080/auth/.well-known/jwks.json",
+                    "disable_jwk_security": true,
+                    "propagate_claims": [
+                        [
+                            "accountId",
+                            "X-User-Id"
+                        ],
+                        [
+                            "role",
+                            "X-User-Role"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/post/create",
+                    "host": [
+                        "http://listing-service:8082"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/chat/rooms",
+            "method": "GET",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "jwk_url": "http://auth-service:8080/auth/.well-known/jwks.json",
+                    "disable_jwk_security": true,
+                    "propagate_claims": [
+                        [
+                            "accountId",
+                            "X-User-Id"
+                        ],
+                        [
+                            "role",
+                            "X-User-Role"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/chat/rooms",
+                    "host": [
+                        "http://chat-service:8083"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/admin/post/queue",
+            "method": "GET",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "jwk_url": "http://auth-service:8080/auth/.well-known/jwks.json",
+                    "disable_jwk_security": true,
+                    "roles_key": "role",
+                    "roles": [
+                        "admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "accountId",
+                            "X-User-Id"
+                        ],
+                        [
+                            "role",
+                            "X-User-Role"
+                        ]
+                    ]
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/admin/post/queue",
+                    "host": [
+                        "http://listing-service:8082"
+                    ]
+                }
+            ]
+        }
+    ]
+}
