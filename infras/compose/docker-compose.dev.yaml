@@ -225,6 +225,73 @@ services:
       retries: 3
       start_period: 10s
 
+  recommend-service-trototvn:
+    build:
+      context: ./../../recommend-service
+      dockerfile: Dockerfile
+    container_name: recommend-service-trototvn
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - WORKER_CONCURRENCY=5
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - milvus-trototvn
+    ports:
+      - "8001:8001"
+    restart: always
+
+  search-service-trototvn:
+    build:
+      context: ./../../search-service
+      dockerfile: Dockerfile
+    container_name: search-service-trototvn
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - WORKER_CONCURRENCY=5
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - milvus-trototvn
+    ports:
+      - "8000:8000"
+    restart: always
+
+  moderation-service-trototvn:
+    image: lamdx4/content-moderator-service:1.0.0
+    container_name: moderation-service-trototvn
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - WORKER_CONCURRENCY=5
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - milvus-trototvn
+    ports:
+      - "8003:8003"
+    restart: always
+
 networks:
   default:
     name: trototvn
