@@ -272,7 +272,7 @@ services:
     restart: always
 
   moderation-service-trototvn:
-    image: lamdx4/content-moderator-service:1.0.0
+    image: lamdx4/content-moderation-service:1.0.0
     container_name: moderation-service-trototvn
     environment:
       - REDIS_HOST=redis-trototvn
