@@ -173,6 +173,58 @@ services:
       - redis-trototvn
       - milvus-trototvn
     restart: always
+
+  content-moderator-service:
+    image: lamdx4/content-moderator-service:1.0.0
+    container_name: content-moderator-service
+    environment:
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - MILVUS_HOST=milvus-trototvn
+      - MILVUS_PORT=19530
+      - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
+      - EMBEDDING_DIM=128
+      - DEVICE=cpu
+      - WORKER_CONCURRENCY=5
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis-trototvn
+      - milvus-trototvn
+    restart: always
+
+  coturn-trototvn:
+    image: coturn/coturn:4.8.0-alpine
+    container_name: coturn-trototvn
+    restart: unless-stopped
+    network_mode: "host"
+    
+    environment:
+      # Cấu hình TURN server (nếu không dùng config file)
+      - REALM=my-video-app.com
+      - TURN_USER=myuser
+      - TURN_PASSWORD=mypassword123
+      - LISTENING_PORT=3478
+      - MIN_PORT=49160
+      - MAX_PORT=49200
+      
+      # Cấu hình giám sát IP
+      - CHECK_INTERVAL=30000  # Kiểm tra mỗi 50 phút
+    
+    volumes:
+      # Mount script và config
+      - ./coturn/entrypoint.sh:/entrypoint.sh:ro
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[t]urnserver' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
 networks:
   default:
     name: trototvn
