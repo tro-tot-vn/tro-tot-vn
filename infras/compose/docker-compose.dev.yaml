@@ -2,6 +2,29 @@ volumes:
   db-trototvn:
 
 services:
+
+    backend:
+    build:
+      context: ../../tro-tot-vn-be
+      dockerfile: Dockerfile
+    container_name: backend-trototvn
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis-trototvn
+      - REDIS_PORT=6379
+      - DB_HOST=db-trototvn
+      - DB_PORT=1433
+      - DB_USERNAME=sa
+      - DB_PASSWORD=${Sa_Password:-00hihiHIHI-}
+      - DB_DATABASE=TroTotVN
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db-trototvn
+      - redis-trototvn
+      - search-service
+    restart: always
+
   db-trototvn:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: db-trototvn
