@@ -18,7 +18,7 @@ services:
       - DB_PASSWORD=${Sa_Password:-00hihiHIHI-}
       - DB_DATABASE=TroTotVN
     ports:
-      - "3000:3000"
+      - "3333:3333"
     depends_on:
       - db-trototvn
       - redis-trototvn
