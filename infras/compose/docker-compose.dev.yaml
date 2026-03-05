@@ -2,8 +2,7 @@ volumes:
   db-trototvn:
 
 services:
-
-    backend:
+  backend:
     build:
       context: ../../tro-tot-vn-be
       dockerfile: Dockerfile
@@ -22,7 +21,6 @@ services:
     depends_on:
       - db-trototvn
       - redis-trototvn
-      - search-service
     restart: always
 
   db-trototvn:
