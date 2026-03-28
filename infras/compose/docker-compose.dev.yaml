@@ -8,15 +8,6 @@ services:
       dockerfile: Dockerfile
     container_name: backend-trototvn
     hostname: backend-trototvn
-    environment:
-      - NODE_ENV=production
-      - REDIS_HOST=redis-trototvn
-      - REDIS_PORT=6379
-      - DB_HOST=db-trototvn
-      - DB_PORT=1433
-      - DB_USERNAME=sa
-      - DB_PASSWORD=${Sa_Password:-00hihiHIHI-}
-      - DB_DATABASE=TroTotVN
     ports:
       - "3333:3333"
     depends_on:
