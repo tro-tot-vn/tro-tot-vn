@@ -13,6 +13,7 @@ services:
     depends_on:
       - db-trototvn
       - redis-trototvn
+      - coturn-trototvn
     restart: always
 
   db-trototvn:

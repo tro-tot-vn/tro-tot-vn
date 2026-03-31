@@ -39,6 +39,10 @@ done
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Public IP: $CURRENT_IP"
 
+# Cai dat redis-cli de thong bao IP
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Dang cai dat redis-cli..."
+apk add --no-cache redis > /dev/null 2>&1 || echo "Khong the cai dat redis-cli, bo qua buoc thong bao IP."
+
 # ============================================
 # Tạo config file động với IP hiện tại
 # ============================================
@@ -73,6 +77,10 @@ fi
 
 COTURN_PID=$!
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Coturn da khoi dong (PID: $COTURN_PID)"
+
+# Luu IP vao Redis (Redis mapping vao port 5555 tren host)
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Dang luu IP vao Redis..."
+redis-cli -h localhost -p 5555 SET coturn:ip "$CURRENT_IP" || echo "Khong the ket noi den Redis de luu IP."
 
 # ============================================
 # Vòng lặp giám sát IP
