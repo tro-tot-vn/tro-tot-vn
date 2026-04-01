@@ -62,6 +62,7 @@ services:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/debezium:/debezium/data
     environment:
       - SA_PASSWORD=${Sa_Password:-00hihiHIHI-}
+      - REDIS_PASSWORD=tro-tot-secret-2024
     depends_on:
       sqlserver.configurator:
         condition: service_completed_successfully
