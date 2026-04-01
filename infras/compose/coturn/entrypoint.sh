@@ -80,7 +80,7 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] Coturn da khoi dong (PID: $COTURN_PID)"
 
 # Luu IP vao Redis (Redis mapping vao port 5555 tren host)
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Dang luu IP vao Redis..."
-redis-cli -h localhost -p 5555 SET coturn:ip "$CURRENT_IP" || echo "Khong the ket noi den Redis de luu IP."
+redis-cli -a "$REDIS_PASSWORD" -h localhost -p 5555 SET coturn:ip "$CURRENT_IP" || echo "Khong the ket noi den Redis de luu IP."
 
 # ============================================
 # Vòng lặp giám sát IP

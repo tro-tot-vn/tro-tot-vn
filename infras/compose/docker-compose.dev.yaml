@@ -14,6 +14,8 @@ services:
       - db-trototvn
       - redis-trototvn
       - coturn-trototvn
+    environment:
+      - REDIS_PASSWORD=tro-tot-secret-2024
     restart: always
 
   db-trototvn:
@@ -75,7 +77,7 @@ services:
       - 5555:6379
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/redis:/data
-    command: redis-server --appendonly yes --appendfsync everysec --save 60 1000
+    command: redis-server --requirepass "tro-tot-secret-2024" --appendonly yes --appendfsync everysec --save 60 1000
     restart: always
 
   redis-insight-trototvn:
@@ -175,6 +177,7 @@ services:
     environment:
       - REDIS_HOST=redis-trototvn
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=tro-tot-secret-2024
       - MILVUS_HOST=milvus-trototvn
       - MILVUS_PORT=19530
       - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
@@ -196,6 +199,7 @@ services:
 
     environment:
       - CHECK_INTERVAL=300 # Kiểm tra mỗi 5 phút
+      - REDIS_PASSWORD=tro-tot-secret-2024
 
     volumes:
       # Mount script và config
@@ -219,6 +223,7 @@ services:
     environment:
       - REDIS_HOST=redis-trototvn
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=tro-tot-secret-2024
       - MILVUS_HOST=milvus-trototvn
       - MILVUS_PORT=19530
       - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
@@ -242,6 +247,7 @@ services:
     environment:
       - REDIS_HOST=redis-trototvn
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=tro-tot-secret-2024
       - MILVUS_HOST=milvus-trototvn
       - MILVUS_PORT=19530
       - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
@@ -263,6 +269,7 @@ services:
     environment:
       - REDIS_HOST=redis-trototvn
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=tro-tot-secret-2024
       - MILVUS_HOST=milvus-trototvn
       - MILVUS_PORT=19530
       - EMBEDDING_MODEL=lamdx4/bge-m3-vietnamese-rental-projection
